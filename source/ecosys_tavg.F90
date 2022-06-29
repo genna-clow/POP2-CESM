@@ -49,6 +49,7 @@
   integer (int_kind), allocatable :: tavg_ids_interior_tendency(:,:)
   integer (int_kind), allocatable :: tavg_ids_surface_flux(:,:)
   integer (int_kind) :: tavg_O2_GAS_FLUX_2  ! O2 flux duplicate
+  integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer ! new line
 
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
