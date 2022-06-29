@@ -50,6 +50,7 @@
   integer (int_kind), allocatable :: tavg_ids_surface_flux(:,:)
   integer (int_kind) :: tavg_O2_GAS_FLUX_2  ! O2 flux duplicate
   integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer ! new line
+  integer (int_kind) :: tavg_SatChl ! new line
 
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
@@ -113,6 +114,11 @@ contains
                            long_name='Dissolved Oxygen Surface Flux',   &
                            units='mmol/m^3 cm/s', grid_loc='2110',      &
                            coordinates='TLONG TLAT time')
+   
+    call define_tavg_field(tavg_SatChl,'totChl_sat',2,              &
+                           long_name='Satellite-Observed Surface Chlorophyll',   &
+                           units='mg/m^3', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time') ! new line 
 
     rmean_var_cnt = size(marbl_instance%glo_scalar_rmean_interior_tendency)
     allocate(tavg_ids_scalar_rmean_interior(rmean_var_cnt))
