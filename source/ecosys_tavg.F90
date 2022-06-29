@@ -49,6 +49,7 @@
   integer (int_kind), allocatable :: tavg_ids_interior_tendency(:,:)
   integer (int_kind), allocatable :: tavg_ids_surface_flux(:,:)
   integer (int_kind) :: tavg_O2_GAS_FLUX_2  ! O2 flux duplicate
+
   integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer ! new line
   integer (int_kind) :: tavg_SatChl ! new line
 
@@ -143,6 +144,8 @@ contains
 
     use ecosys_diagnostics_operators_mod,   only : marbl_diags_stream_cnt_surface
     use ecosys_tracers_and_saved_state_mod, only : o2_ind
+    use named_field_mod,                    only : named_field_get ! new line
+    use blocks,                             only : nx_block, ny_block ! new line
 
     implicit none
 
@@ -151,6 +154,7 @@ contains
     real (r8)                  , intent(in) :: STF(:,:,:)
     type(marbl_interface_class), intent(in) :: marbl_instance
     integer,                     intent(in) :: bid
+    real (r8)                               :: CHL(nx_block,ny_block) ! new line
 
     !-----------------------------------------------------------------------
 
@@ -162,7 +166,11 @@ contains
          tavg_ids = tavg_ids_surface_flux, &
          num_elements = marbl_instance%surface_flux_diags%num_elements)
 
-    call accumulate_tavg_field(STF(:,:,o2_ind), tavg_O2_GAS_FLUX_2, bid, 1)
+   call accumulate_tavg_field(STF(:,:,o2_ind), tavg_O2_GAS_FLUX_2, bid, 1)
+
+   call named_field_get(totChl_surf_nf_ind, bid, CHL(:,:)) ! new line
+
+   call accumulate_tavg_field(CHL(:,:), tavg_SatChl, bid, 1) ! new line
 
   end subroutine ecosys_tavg_accumulate_surface
 
