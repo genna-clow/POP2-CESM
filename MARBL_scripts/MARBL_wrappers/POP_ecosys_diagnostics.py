@@ -40,6 +40,10 @@ def write_ecosys_diagnostics_file(active_tracers, autotroph_list, zooplankton_li
     fout.write("SEAICE_DUST_FLUX_CPL : medium_average\n")
     fout.write("ATM_BLACK_CARBON_FLUX_CPL : medium_average\n")
     fout.write("SEAICE_BLACK_CARBON_FLUX_CPL : medium_average\n")
+    fout.write("totChl : high_average\n")
+    fout.write("totChl_sat : high_average\n")
+    fout.write("PAR_weight : high_average\n")
+    fout.write("ZEN_weight : high_average\n")
 
     # If adjusting bury coefficients, add running means to requested diagnostics
     if ladjust_bury_coeff:

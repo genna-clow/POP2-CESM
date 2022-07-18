@@ -30,6 +30,7 @@
   use ecosys_forcing_mod    ,  only : interior_tendency_forcings, surf_shortwave_ind
   use constants             , only : c0
   use ecosys_diagnostics_operators_mod, only : max_marbl_diags_stream_cnt
+  use forcing_coupled       , only: QSW_COSZ_WGHT ! new line
 
   implicit none
   private
@@ -53,7 +54,9 @@
 
   integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer ! new line
   integer (int_kind) :: tavg_SatChl ! new line
-  integer (int_kind) :: tavg_PARweight ! new line 
+  integer (int_kind) :: tavg_Chl ! new line
+  integer (int_kind) :: tavg_PARweight ! new line
+  integer (int_kind) :: tavg_ZENweight ! new line 
 
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
@@ -123,8 +126,18 @@ contains
                            units='mg/m^3', grid_loc='2110',      &
                            coordinates='TLONG TLAT time') ! new line
 
+    call define_tavg_field(tavg_Chl,'totChl',2,              &
+                           long_name='Surface Chlorophyll',   &
+                           units='none', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time') ! new line
+
     call define_tavg_field(tavg_PARweight,'PAR_weight',2,              &
                            long_name='PAR weight',   &
+                           units='none', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time') ! new line
+
+    call define_tavg_field(tavg_ZENweight,'ZEN_weight',2,              &
+                           long_name='Solar zenith angle weight',   &
                            units='none', grid_loc='2110',      &
                            coordinates='TLONG TLAT time') ! new line
 
@@ -162,8 +175,10 @@ contains
     type(marbl_interface_class), intent(in) :: marbl_instance
     integer,                     intent(in) :: bid
     real (r8)                               :: CHL(nx_block,ny_block) ! new line
+    real (r8)                               :: CHL_sat(nx_block,ny_block) ! new line
     real (r8)                               :: PAR_weight(nx_block,ny_block) ! new line   
-    integer(kind=int_kind)                  :: iblock ! new line?
+    real (r8)                               :: ZEN_weight(nx_block,ny_block) ! new line
+
     !-----------------------------------------------------------------------
 
     ! Accumulate surface_flux_diags
@@ -177,17 +192,30 @@ contains
    call accumulate_tavg_field(STF(:,:,o2_ind), tavg_O2_GAS_FLUX_2, bid, 1)
     
    call named_field_get(totChl_surf_nf_ind, bid, CHL(:,:)) ! new line
+
+   CHL_sat(:,:) = CHL(:,:) ! new line
    
-   ! new section: 
+   ! new section:
    PAR_weight = 1
-   where (interior_tendency_forcings(surf_shortwave_ind)%field_1d(:,:,1,iblock) .le. c0)
+   where (interior_tendency_forcings(surf_shortwave_ind)%field_1d(:,:,1,bid) .eq. c0)
        PAR_weight = c0 
-       CHL = c0
+       CHL_sat = c0
    end where   
-   
+
+   ! new section:
+   ZEN_weight = 1
+   where (QSW_COSZ_WGHT(:,:,bid) .le. 0.342) ! cos(70 deg)
+       ZEN_weight = c0
+       CHL_sat = c0
+   end where
+
    call accumulate_tavg_field(PAR_weight(:,:), tavg_PARweight, bid, 1) ! new line
  
-   call accumulate_tavg_field(CHL(:,:), tavg_SatChl, bid, 1) ! new line
+   call accumulate_tavg_field(zenith_weight(:,:), tavg_ZENweight, bid, 1) ! new line
+
+   call accumulate_tavg_field(CHL(:,:), tavg_Chl, bid, 1) ! new line
+
+   call accumulate_tavg_field(CHL_sat(:,:), tavg_SatChl, bid, 1) ! new line
 
   end subroutine ecosys_tavg_accumulate_surface
 
