@@ -52,16 +52,15 @@
   integer (int_kind), allocatable :: tavg_ids_surface_flux(:,:)
   integer (int_kind) :: tavg_O2_GAS_FLUX_2  ! O2 flux duplicate
 
-  integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer ! new line
-  ! integer (int_kind) :: tavg_SatChl ! new line
-  integer (int_kind) :: tavg_SatChl_nocld ! new line
-  integer (int_kind) :: tavg_Chl ! new line
-  integer (int_kind) :: tavg_sat_weight
-
-  ! integer (int_kind) :: tavg_PARweight ! new line
-  ! integer (int_kind) :: tavg_ZENweight ! new line 
-  ! integer (int_kind) :: tavg_ICEweight ! new line
-
+  integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer 
+  integer (int_kind) :: tavg_Chl 
+  integer (int_kind) :: tavg_SatChl
+  integer (int_kind) :: tavg_SatChl_weight 
+  integer (int_kind) :: tavg_SatChl_nocld 
+  integer (int_kind) :: tavg_SatChl_weight_nocld
+  integer (int_kind) :: tavg_cloudfrac
+  ! integer (int_kind) :: tavg_cloudfrac_weight
+  
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
 
@@ -127,38 +126,38 @@ contains
 
     call define_tavg_field(tavg_Chl,'totChl',2,              &
                            long_name='Surface Chlorophyll',   &
-                           units='none', grid_loc='2110',      &
-                           coordinates='TLONG TLAT time') ! new line
+                           units='mg/m^3', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')
 
-    ! call define_tavg_field(tavg_SatChl,'totChl_sat',2,              &
-    !                        long_name='Satellite-Observed Surface Chlorophyll',   &
-    !                        units='mg/m^3', grid_loc='2110',      &
-    !                        coordinates='TLONG TLAT time') ! new line
+    call define_tavg_field(tavg_SatChl,'totChl_sat',2,              &
+                            long_name='Satellite-Observed Surface Chlorophyll',   &
+                            units='mg/m^3', grid_loc='2110',      &
+                            coordinates='TLONG TLAT time')
     
     call define_tavg_field(tavg_SatChl_nocld,'totChl_sat_nocld',2,              &
                            long_name='Satellite-Observed Surface Chlorophyll Without Clouds',   &
                            units='mg/m^3', grid_loc='2110',      &
-                           coordinates='TLONG TLAT time') ! new line
-
-    call define_tavg_field(tavg_sat_weight,'totChl_sat_nocld_wgt',2,              &
+                           coordinates='TLONG TLAT time') 
+                           
+    call define_tavg_field(tavg_SatChl_weight_nocld,'totChl_sat_nocld_wgt',2,              &
                            long_name='Weight for Satellite-Observed Surface Chlorophyll Without Clouds',   &
                            units='none', grid_loc='2110',      &
-                           coordinates='TLONG TLAT time') ! new line  
+                           coordinates='TLONG TLAT time') 
+    
+    call define_tavg_field(tavg_SatChl_weight,'totChl_sat_wgt',2,              &
+                           long_name='Weight for Satellite-Observed Surface Chlorophyll',   &
+                           units='none', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')
 
-    ! call define_tavg_field(tavg_PARweight,'PAR_weight',2,              &
-    !                        long_name='PAR weight',   &
+    call define_tavg_field(tavg_cloudfrac,'cloudfrac_modis',2,              &
+                           long_name='MODIS cloud fraction',   &
+                           units='%', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')
+    
+    ! call define_tavg_field(tavg_cloudfrac_weight,'cloudfrac_modis_wgt',2,              &
+    !                        long_name='MODIS cloud fraction weight',   &
     !                        units='none', grid_loc='2110',      &
-    !                        coordinates='TLONG TLAT time') ! new line
-
-    ! call define_tavg_field(tavg_ZENweight,'ZEN_weight',2,              &
-    !                        long_name='Solar zenith angle weight',   &
-    !                        units='none', grid_loc='2110',      &
-    !                        coordinates='TLONG TLAT time') ! new line
-
-    ! call define_tavg_field(tavg_ICEweight,'ICE_weight',2,              &
-    !                        long_name='Sea ice weight',   &
-    !                        units='none', grid_loc='2110',      &
-    !                        coordinates='TLONG TLAT time') ! new line
+    !                        coordinates='TLONG TLAT time')
 
     rmean_var_cnt = size(marbl_instance%glo_scalar_rmean_interior_tendency)
     allocate(tavg_ids_scalar_rmean_interior(rmean_var_cnt))
@@ -185,7 +184,7 @@ contains
     use ecosys_tracers_and_saved_state_mod, only : o2_ind
     use named_field_mod,                    only : named_field_get ! new line
     use blocks,                             only : nx_block, ny_block ! new line
-    use forcing_fields,                     only : compute_cosz, IFRAC
+    use forcing_fields,                     only : compute_cosz, IFRAC, CLOUDFRAC
 
     implicit none
 
@@ -195,11 +194,8 @@ contains
     type(marbl_interface_class), intent(in) :: marbl_instance
     integer,                     intent(in) :: bid
     real (r8)                               :: CHL(nx_block,ny_block) ! new line
-    real (r8)                               :: CHL_sat(nx_block,ny_block) ! new line
     real (r8)                               :: Chl_sat_weight(nx_block,ny_block) ! new line
     real (r8)                               :: ZEN_weight(nx_block,ny_block) ! new line
-    ! real (r8)                               :: PAR_weight(nx_block,ny_block) ! new line   
-    ! real (r8)                               :: ICE_weight(nx_block,ny_block) ! new line
 
     !-----------------------------------------------------------------------
 
@@ -215,66 +211,40 @@ contains
     
    call named_field_get(totChl_surf_nf_ind, bid, CHL(:,:)) 
    
+   ! Accumulate total chlorophyll field
    call accumulate_tavg_field(CHL(:,:), tavg_Chl, bid, 1) 
-
-   CHL_sat(:,:) = CHL(:,:) 
    
    ! Compute cos of solar zenith angle
    call compute_cosz(tday00, bid, ZEN_weight)
 
-   ! new section:
-   ! Combine all weights together
+   ! Set weight to 1
    Chl_sat_weight = c1
   
    where ((interior_tendency_forcings(surf_shortwave_ind)%field_1d(:,:,1,bid) .eq. c0) & 
-          .or. (ZEN_weight(:,:) .le. 0.342) &
-          .or. (IFRAC(:,:,1) .gt. 0)) 
+          .or. (ZEN_weight(:,:) .le. 0.342)) ! &
+          ! .or. (IFRAC(:,:,1) .gt. 0)) 
         Chl_sat_weight = c0 
-        CHL_sat = c0  
-   end where  
+   endwhere  
 
-  call accumulate_tavg_field(CHL_sat(:,:), tavg_SatChl_nocld, bid, 1) 
-
-  call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_sat_weight, bid, 1) ! new line
-
-  ! Add clouds here 
+   Chl_sat_weight =  min(Chl_sat_weight, (c1-IFRAC(:,:,bid))/c1)
   
-  !  where (CLOUDFRAC(:,:) .gt. ??) 
-  !       Chl_sat_weight = c0 
-  !       CHL_sat = c0  
-  !  end where 
+   ! Accumulate baseline chlor -- everything except for clouds
+   call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:), tavg_SatChl_nocld, bid, 1) 
+   ! Accumulate weighted cloud fraction 
+   call accumulate_tavg_field(CLOUDFRAC(:,:,bid)*Chl_sat_weight(:,:), tavg_cloudfrac, bid, 1) 
+   ! Accumulate weight for baseline chlor 
+   call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_SatChl_weight_nocld, bid, 1)
 
-  ! call accumulate_tavg_field(CHL_sat(:,:), tavg_SatChl, bid, 1) ! new line
+   Chl_sat_weight = min(Chl_sat_weight, (100._r8-CLOUDFRAC(:,:,bid))/100._r8)
 
+   ! the problem arises with Chl_sat_weight here 
+   ! add where statement?
+   where(Chl_sat_weight(:,:) .lt. c0)
+     Chl_sat_weight(:,:) = c0
+   endwhere
 
-  !!!!!!! OLD: 
-  !  PAR_weight = c1
-  !  where (interior_tendency_forcings(surf_shortwave_ind)%field_1d(:,:,1,bid) .eq. c0) 
-  !      PAR_weight = c0 
-  !      CHL_sat = c0
-  !  end where  
-
-  !  where (ZEN_weight(:,:) .le. 0.342) ! cos(70 deg)
-  !      ZEN_weight = c0
-  !      CHL_sat = c0
-  !  elsewhere 
-  !      ZEN_weight = c1
-  !  end where
-
-  !  ICE_weight = c1
-  !  where (IFRAC(:,:,1) .gt. 0) 
-  !      ICE_weight = c0 
-  !      CHL_sat = c0
-  !  end where 
-
-  !  call accumulate_tavg_field(PAR_weight(:,:), tavg_PARweight, bid, 1) ! new line
-   
-  !  ! delete eventually
-  !  call accumulate_tavg_field(ZEN_weight(:,:), tavg_ZENweight, bid, 1) ! new line
-
-  !  ! delete eventually
-  !  call accumulate_tavg_field(ICE_weight(:,:), tavg_ICEweight, bid, 1) ! new line
-  !!!!!!!
+   call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:), tavg_SatChl, bid, 1) 
+   call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_SatChl_weight, bid, 1)
 
   end subroutine ecosys_tavg_accumulate_surface
 
