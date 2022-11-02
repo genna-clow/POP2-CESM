@@ -114,25 +114,23 @@
 
    real (r8), dimension(:), allocatable ::  &
       qsw_12hr_factor
-
-
-!!!!  moved to forcing_fields.F90      
+ 
 !-----------------------------------------------------------------------
 !  variables for qsw cosz option
 !-----------------------------------------------------------------------
 
-   ! integer (int_kind) :: timer_compute_cosz
+   integer (int_kind) :: timer_compute_cosz
 
-   ! real (r8) ::  &
-   !    tday00_interval_beg,    & ! model time at beginning of coupling interval
-   !    orb_eccen,              & ! Earth eccentricity
-   !    orb_obliqr,             & ! Earth Obliquity
-   !    orb_lambm0,             & ! longitude of perihelion at v-equinox
-   !    orb_mvelpp                ! Earths Moving vernal equinox of orbit +pi
+   real (r8) ::  &
+      tday00_interval_beg,    & ! model time at beginning of coupling interval
+      orb_eccen,              & ! Earth eccentricity
+      orb_obliqr,             & ! Earth Obliquity
+      orb_lambm0,             & ! longitude of perihelion at v-equinox
+      orb_mvelpp                ! Earths Moving vernal equinox of orbit +pi
 
-   ! real (r8), dimension(:,:,:), allocatable :: &
-   !       QSW_COSZ_WGHT,      & ! weights
-   !       QSW_COSZ_WGHT_NORM    ! normalization for QSW_COSZ_WGHT
+   real (r8), dimension(:,:,:), allocatable :: &
+         QSW_COSZ_WGHT,      & ! weights
+         QSW_COSZ_WGHT_NORM    ! normalization for QSW_COSZ_WGHT
 
    integer (int_kind), private ::   &
       cpl_ts                ! flag id for coupled_ts flag
@@ -900,46 +898,45 @@
     enddo
     !$OMP END PARALLEL DO
 
-!!!! Moved to forcing_fields !!!! 
-! !-----------------------------------------------------------------------
-! !  Compute QSW_COSZ_WGHT_NORM.
-! !-----------------------------------------------------------------------
+!-----------------------------------------------------------------------
+!  Compute QSW_COSZ_WGHT_NORM.
+!-----------------------------------------------------------------------
 
-!     if ( qsw_distrb_iopt == qsw_distrb_iopt_cosz ) then
-!        tday00_interval_beg = tday00
+    if ( qsw_distrb_iopt == qsw_distrb_iopt_cosz ) then
+       tday00_interval_beg = tday00
 
-!        !$OMP PARALLEL DO PRIVATE(iblock,nn,cosz_day)
-!        do iblock = 1, nblocks_clinic
+       !$OMP PARALLEL DO PRIVATE(iblock,nn,cosz_day)
+       do iblock = 1, nblocks_clinic
 
-!           QSW_COSZ_WGHT_NORM(:,:,iblock) = c0
+          QSW_COSZ_WGHT_NORM(:,:,iblock) = c0
 
-!           do nn = 1, nsteps_per_interval
-!              cosz_day = tday00_interval_beg + interval_cum_dayfrac(nn-1) &
-!                 - interval_cum_dayfrac(nsteps_per_interval)
+          do nn = 1, nsteps_per_interval
+             cosz_day = tday00_interval_beg + interval_cum_dayfrac(nn-1) &
+                - interval_cum_dayfrac(nsteps_per_interval)
       
-!              ! Now doing this in forcing_fields... I think
-!              call compute_cosz(cosz_day, iblock, QSW_COSZ_WGHT(:,:,iblock))
+             ! Now doing this in forcing_fields... I think
+             call compute_cosz(cosz_day, iblock, QSW_COSZ_WGHT(:,:,iblock))
 
-!              if (interval_avg_ts(nn)) then
-!                 QSW_COSZ_WGHT_NORM(:,:,iblock) = &
-!                    QSW_COSZ_WGHT_NORM(:,:,iblock) &
-!                    + p5 * QSW_COSZ_WGHT(:,:,iblock)
-!              else
-!                 QSW_COSZ_WGHT_NORM(:,:,iblock) = &
-!                    QSW_COSZ_WGHT_NORM(:,:,iblock) &
-!                    + QSW_COSZ_WGHT(:,:,iblock)
-!              endif
+             if (interval_avg_ts(nn)) then
+                QSW_COSZ_WGHT_NORM(:,:,iblock) = &
+                   QSW_COSZ_WGHT_NORM(:,:,iblock) &
+                   + p5 * QSW_COSZ_WGHT(:,:,iblock)
+             else
+                QSW_COSZ_WGHT_NORM(:,:,iblock) = &
+                   QSW_COSZ_WGHT_NORM(:,:,iblock) &
+                   + QSW_COSZ_WGHT(:,:,iblock)
+             endif
 
-!           enddo
+          enddo
 
-!           where (QSW_COSZ_WGHT_NORM(:,:,iblock) > c0) &
-!              QSW_COSZ_WGHT_NORM(:,:,iblock) = &
-!                 (fullsteps_per_interval + p5 * halfsteps_per_interval) &
-!                 / QSW_COSZ_WGHT_NORM(:,:,iblock)
+          where (QSW_COSZ_WGHT_NORM(:,:,iblock) > c0) &
+             QSW_COSZ_WGHT_NORM(:,:,iblock) = &
+                (fullsteps_per_interval + p5 * halfsteps_per_interval) &
+                / QSW_COSZ_WGHT_NORM(:,:,iblock)
 
-!        enddo
-!        !$OMP END PARALLEL DO
-!     endif
+       enddo
+       !$OMP END PARALLEL DO
+    endif
 
 #endif
 !-----------------------------------------------------------------------
@@ -1536,7 +1533,74 @@
 
  end subroutine rotate_wind_stress
 
-!!!! Deleted compute_cosz -- moved to forcing_fields !!!!  
+ !***********************************************************************
+!BOP
+! !IROUTINE: compute_cosz
+! !INTERFACE:
+
+ subroutine compute_cosz(tday, iblock, COSZ)
+
+   ! !DESCRIPTION:
+   !  This subroutine computes cos of the solar zenith angle.
+   !  Negative values are set to zero.
+   !
+   ! !REVISION HISTORY:
+   !  same as module
+   !
+   ! !USES:
+   
+      use shr_orb_mod, only: shr_orb_decl, shr_orb_cosz
+   
+   ! !INPUT PARAMETERS:
+   
+      real (r8), intent(in) :: tday
+      integer (int_kind), intent(in) :: iblock
+   
+   ! !OUTPUT PARAMETERS:
+   
+      real (r8), dimension(:,:), intent(out) :: COSZ
+   
+   !EOP
+   !BOC
+   !-----------------------------------------------------------------------
+   !
+   !  local variables
+   !
+   !-----------------------------------------------------------------------
+   
+      integer (int_kind) ::   &
+         i, j            ! loop indices
+   
+      real (r8) :: &
+         calday,       & ! Calendar day, including fraction
+         delta,        & ! Solar declination angle in rad
+         eccf            ! Earth-sun distance factor (ie. (1/r)**2)
+   
+   !-----------------------------------------------------------------------
+   
+      ! call timer_start(timer_compute_cosz, block_id=iblock)
+   
+   !  shr_orb code assumes Jan 1 = calday 1, unlike Jan 1 = tday 0
+      calday = tday + c1
+   
+      call shr_orb_decl(calday, orb_eccen, orb_mvelpp, orb_lambm0, &
+                        orb_obliqr, delta, eccf)
+   
+      do j = 1, ny_block
+         do i = 1, nx_block
+            COSZ(i,j) = shr_orb_cosz(calday, TLAT(i,j,iblock), &
+                                       TLON(i,j,iblock), delta)
+            COSZ(i,j) = max(c0, COSZ(i,j))
+         enddo
+      enddo
+   
+      ! call timer_stop(timer_compute_cosz, block_id=iblock)
+   
+   !-----------------------------------------------------------------------
+   !EOC
+   
+   end subroutine compute_cosz
+
 
 !***********************************************************************
 

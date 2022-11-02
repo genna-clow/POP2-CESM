@@ -196,8 +196,8 @@ contains
     use named_field_mod,                    only : named_field_get
     use blocks,                             only : nx_block, ny_block 
     use domain_size, only: max_blocks_clinic
-    use forcing_fields,                     only : compute_cosz, IFRAC, &
-                                                   CLOUDFRAC_MODIS, CLOUDFRAC_ISCCP, COSZEN
+    use forcing_fields,                     only : IFRAC, COSZEN, &
+                                                   CLOUDFRAC_MODIS, CLOUDFRAC_ISCCP
     use grid,                               only : TLOND, TLATD
 
     implicit none
@@ -207,7 +207,6 @@ contains
     real (r8)                  , intent(in) :: STF(:,:,:)
     type(marbl_interface_class), intent(in) :: marbl_instance
     integer,                     intent(in) :: bid
-   ! New variables added: 
     real (r8)                               :: CHL(nx_block,ny_block) ! total surface chlorophyll conc.
     real (r8)                               :: Chl_sat_weight(nx_block, ny_block) ! weight to mask areas not viewable by satellite
     real (r8)                               :: cloud_weight_modis(nx_block, ny_block) ! cloud weight for MODIS
@@ -252,7 +251,7 @@ contains
    ! calculate the longitude that corresponds with 1:30
    ! 1pm = 14 in loc_time variable 
    ! CAM time = POP time - 1
-   sat_loc_time = 13.5 ! approximate time of satellite fly-over
+   sat_loc_time = 13.5 ! approximate time of Aqua satellite fly-over (1:30pm)
    sat_lon = 15*(sat_loc_time-ihour)
    swath_width = 1668 ! 2330 for MODIS
    swath = c0
