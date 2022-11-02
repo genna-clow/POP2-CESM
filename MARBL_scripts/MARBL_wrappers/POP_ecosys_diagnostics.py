@@ -40,12 +40,18 @@ def write_ecosys_diagnostics_file(active_tracers, autotroph_list, zooplankton_li
     fout.write("SEAICE_DUST_FLUX_CPL : medium_average\n")
     fout.write("ATM_BLACK_CARBON_FLUX_CPL : medium_average\n")
     fout.write("SEAICE_BLACK_CARBON_FLUX_CPL : medium_average\n")
+
+    # Add satellite emulator fields
+    fout.write("# Chlorophyll satellite emulator fields\n#\n")
     fout.write("totChl : high_average\n")
     fout.write("totChl_sat_nocld : high_average\n")
     fout.write("totChl_sat_nocld_wgt : high_average\n")
-    fout.write("totChl_sat : high_average\n")
-    fout.write("totChl_sat_wgt : high_average\n")
+    fout.write("totChl_modis : high_average\n")
+    fout.write("totChl_modis_wgt : high_average\n")
+    fout.write("totChl_isccp : high_average\n")
+    fout.write("totChl_isccp_wgt : high_average\n")
     fout.write("cloudfrac_modis : high_average\n")
+    fout.write("cloudfrac_isccp : high_average\n")
 
     # If adjusting bury coefficients, add running means to requested diagnostics
     if ladjust_bury_coeff:

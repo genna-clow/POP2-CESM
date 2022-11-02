@@ -33,7 +33,8 @@ module ocn_import_export
    use forcing_fields,    only: IFRAC, U10_SQR, ATM_PRESS
    use forcing_fields,    only: LAMULT, USTOKES, VSTOKES, LASL
    use forcing_fields,    only: ATM_FINE_DUST_FLUX, ATM_COARSE_DUST_FLUX, SEAICE_DUST_FLUX
-   use forcing_fields,    only: ATM_BLACK_CARBON_FLUX, SEAICE_BLACK_CARBON_FLUX, CLOUDFRAC
+   use forcing_fields,    only: ATM_BLACK_CARBON_FLUX, SEAICE_BLACK_CARBON_FLUX, &
+                                CLOUDFRAC_MODIS, CLOUDFRAC_ISCCP, COSZEN
    use mcog,              only: lmcog, mcog_ncols, import_mcog
    use forcing_coupled,   only: ncouple_per_day,  &
                                 update_ghost_cells_coupler_fluxes, &
@@ -480,7 +481,7 @@ contains
       call named_field_set(ATM_NOy_nf_ind, WORK1)
    endif
 
-   if (index_x2o_Sa_cloudfrac > 0) then
+   if (index_x2o_Sa_m_cloudfrac > 0) then
       n = 0
       do iblock = 1, nblocks_clinic
          this_block = get_block(blocks_clinic(iblock),iblock)
@@ -488,33 +489,76 @@ contains
          do j=this_block%jb,this_block%je
          do i=this_block%ib,this_block%ie
             n = n + 1
-            CLOUDFRAC(i,j,iblock) = x2o(index_x2o_Sa_cloudfrac,n)
-            
+            CLOUDFRAC_MODIS(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_m_cloudfrac,n)))
          enddo
          enddo
       enddo
 
-      ! Add where statement here?
-      ! Contrain values between 0 and 100 
-      ! where (CLOUDFRAC(:,:,:) .gt. 100._r8)
-      !    CLOUDFRAC(:,:,:) = 100._r8
-      ! endwhere
-      ! where(CLOUDFRAC(:,:,:) .lt. c0)
-      !    CLOUDFRAC(:,:,:) = c0
-      ! endwhere
-
-      call POP_HaloUpdate(CLOUDFRAC,POP_haloClinic,          &
+      call POP_HaloUpdate(CLOUDFRAC_MODIS,POP_haloClinic,          &
                        POP_gridHorzLocCenter,          &
                        POP_fieldKindScalar, errorCode, &
                        fillValue = 0.0_POP_r8)
 
       if (errorCode /= POP_Success) then
          call POP_ErrorSet(errorCode, &
-            'ocn_import_mct: error updating DIAG CLOUDFRAC halo')
+            'ocn_import_mct: error updating DIAG CLOUDFRAC_MODIS halo')
          return
       endif
 
    endif
+
+   if (index_x2o_Sa_i_cloudfrac > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            CLOUDFRAC_ISCCP(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_i_cloudfrac,n)))
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(CLOUDFRAC_ISCCP,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating DIAG CLOUDFRAC_ISCCP halo')
+         return
+      endif
+
+   endif
+
+   if (index_x2o_Sa_coszen > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            COSZEN(i,j,iblock) = x2o(index_x2o_Sa_coszen,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(COSZEN,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating DIAG COSZEN halo')
+         return
+      endif
+
+   endif
+
 
 !-----------------------------------------------------------------------
 !

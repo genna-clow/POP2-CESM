@@ -13,7 +13,6 @@
 !
 !  Written by: Michael Levy, NCAR, Dec 2014
 
-
 ! !REVISION HISTORY:
 !  SVN:$Id$
 
@@ -28,9 +27,9 @@
   use marbl_interface       , only : marbl_interface_class
   use marbl_interface_public_types , only : marbl_diagnostics_type
   use ecosys_forcing_mod    ,  only : interior_tendency_forcings, surf_shortwave_ind
-  use constants             , only : c0, c1
+  use constants             , only : c0, c1, pi, radius
   use ecosys_diagnostics_operators_mod, only : max_marbl_diags_stream_cnt
-  use time_management       , only: tday00
+  use time_management       , only: ihour !! new line
 
   implicit none
   private
@@ -54,12 +53,14 @@
 
   integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer 
   integer (int_kind) :: tavg_Chl 
-  integer (int_kind) :: tavg_SatChl
-  integer (int_kind) :: tavg_SatChl_weight 
   integer (int_kind) :: tavg_SatChl_nocld 
   integer (int_kind) :: tavg_SatChl_weight_nocld
-  integer (int_kind) :: tavg_cloudfrac
-  ! integer (int_kind) :: tavg_cloudfrac_weight
+  integer (int_kind) :: tavg_isccp_Chl
+  integer (int_kind) :: tavg_isccp_Chl_weight
+  integer (int_kind) :: tavg_modis_Chl
+  integer (int_kind) :: tavg_modis_Chl_weight
+  integer (int_kind) :: tavg_cloudfrac_modis
+  integer (int_kind) :: tavg_cloudfrac_isccp
   
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
   integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
@@ -128,11 +129,6 @@ contains
                            long_name='Surface Chlorophyll',   &
                            units='mg/m^3', grid_loc='2110',      &
                            coordinates='TLONG TLAT time')
-
-    call define_tavg_field(tavg_SatChl,'totChl_sat',2,              &
-                            long_name='Satellite-Observed Surface Chlorophyll',   &
-                            units='mg/m^3', grid_loc='2110',      &
-                            coordinates='TLONG TLAT time')
     
     call define_tavg_field(tavg_SatChl_nocld,'totChl_sat_nocld',2,              &
                            long_name='Satellite-Observed Surface Chlorophyll Without Clouds',   &
@@ -143,22 +139,37 @@ contains
                            long_name='Weight for Satellite-Observed Surface Chlorophyll Without Clouds',   &
                            units='none', grid_loc='2110',      &
                            coordinates='TLONG TLAT time') 
-    
-    call define_tavg_field(tavg_SatChl_weight,'totChl_sat_wgt',2,              &
-                           long_name='Weight for Satellite-Observed Surface Chlorophyll',   &
+
+    call define_tavg_field(tavg_isccp_Chl,'totChl_isccp',2,              &
+                           long_name='ISCCP-Observed Surface Chlorophyll',   &
+                           units='mg/m^3', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')
+
+    call define_tavg_field(tavg_isccp_Chl_weight,'totChl_isccp_wgt',2,              &
+                           long_name='Weight for ISCCP-Observed Surface Chlorophyll',   &
                            units='none', grid_loc='2110',      &
                            coordinates='TLONG TLAT time')
 
-    call define_tavg_field(tavg_cloudfrac,'cloudfrac_modis',2,              &
+    call define_tavg_field(tavg_modis_Chl,'totChl_modis',2,              &
+                           long_name='MODIS-Observed Surface Chlorophyll',   &
+                           units='mg/m^3', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')
+
+    call define_tavg_field(tavg_modis_Chl_weight,'totChl_modis_wgt',2,              &
+                           long_name='Weight for MODIS-Observed Surface Chlorophyll',   &
+                           units='none', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')
+
+    call define_tavg_field(tavg_cloudfrac_modis,'cloudfrac_modis',2,              &
                            long_name='MODIS cloud fraction',   &
                            units='%', grid_loc='2110',      &
                            coordinates='TLONG TLAT time')
     
-    ! call define_tavg_field(tavg_cloudfrac_weight,'cloudfrac_modis_wgt',2,              &
-    !                        long_name='MODIS cloud fraction weight',   &
-    !                        units='none', grid_loc='2110',      &
-    !                        coordinates='TLONG TLAT time')
-
+    call define_tavg_field(tavg_cloudfrac_isccp,'cloudfrac_isccp',2,              &
+                           long_name='ISCCP cloud fraction',   &
+                           units='%', grid_loc='2110',      &
+                           coordinates='TLONG TLAT time')                       
+    
     rmean_var_cnt = size(marbl_instance%glo_scalar_rmean_interior_tendency)
     allocate(tavg_ids_scalar_rmean_interior(rmean_var_cnt))
     do n = 1, rmean_var_cnt
@@ -182,9 +193,12 @@ contains
 
     use ecosys_diagnostics_operators_mod,   only : marbl_diags_stream_cnt_surface
     use ecosys_tracers_and_saved_state_mod, only : o2_ind
-    use named_field_mod,                    only : named_field_get ! new line
-    use blocks,                             only : nx_block, ny_block ! new line
-    use forcing_fields,                     only : compute_cosz, IFRAC, CLOUDFRAC
+    use named_field_mod,                    only : named_field_get
+    use blocks,                             only : nx_block, ny_block 
+    use domain_size, only: max_blocks_clinic
+    use forcing_fields,                     only : compute_cosz, IFRAC, &
+                                                   CLOUDFRAC_MODIS, CLOUDFRAC_ISCCP, COSZEN
+    use grid,                               only : TLOND, TLATD
 
     implicit none
 
@@ -193,9 +207,20 @@ contains
     real (r8)                  , intent(in) :: STF(:,:,:)
     type(marbl_interface_class), intent(in) :: marbl_instance
     integer,                     intent(in) :: bid
-    real (r8)                               :: CHL(nx_block,ny_block) ! new line
-    real (r8)                               :: Chl_sat_weight(nx_block,ny_block) ! new line
-    real (r8)                               :: ZEN_weight(nx_block,ny_block) ! new line
+   ! New variables added: 
+    real (r8)                               :: CHL(nx_block,ny_block) ! total surface chlorophyll conc.
+    real (r8)                               :: Chl_sat_weight(nx_block, ny_block) ! weight to mask areas not viewable by satellite
+    real (r8)                               :: cloud_weight_modis(nx_block, ny_block) ! cloud weight for MODIS
+    real (r8)                               :: Chl_sat_weight_modis(nx_block, ny_block) ! chl weight for MODIS
+    real (r8)                               :: cloud_weight_isccp(nx_block, ny_block) ! cloud weight for ISCCP
+    real (r8)                               :: Chl_sat_weight_isccp(nx_block, ny_block) ! chl weight for ISCCP
+    real (r8)                               :: loc_time(nx_block, ny_block, max_blocks_clinic) ! local time of day
+    real (r8)                               :: sat_loc_time ! approximate time of satellite fly-over 
+    real (r8)                               :: sat_lon ! longitude of satellite
+    integer                                 :: swath_width ! swath width of satellite detection in km
+    real (r8)                               :: swath(nx_block, ny_block, max_blocks_clinic) ! swath mask
+    real (r8)                               :: dlon(nx_block, ny_block, max_blocks_clinic) ! distance to satellite longitude in deg
+    real (r8)                               :: dx(nx_block, ny_block, max_blocks_clinic) ! distance to satellite longitude in km
 
     !-----------------------------------------------------------------------
 
@@ -213,38 +238,61 @@ contains
    
    ! Accumulate total chlorophyll field
    call accumulate_tavg_field(CHL(:,:), tavg_Chl, bid, 1) 
-   
-   ! Compute cos of solar zenith angle
-   call compute_cosz(tday00, bid, ZEN_weight)
+  
+   !!! Simulate simplified satellite swath
+   ! compute local time of day
+   loc_time = TLOND/15 + ihour 
+    where (loc_time .gt. 24)
+        loc_time = loc_time-24 
+    elsewhere (loc_time .eq. 0)
+        loc_time = 24
+    endwhere
+ 
+   ! approximate times of satellite fly-overs (Terra and Aqua): 10:30am and 1:30pm
+   ! calculate the longitude that corresponds with 1:30
+   ! 1pm = 14 in loc_time variable 
+   ! CAM time = POP time - 1
+   sat_loc_time = 13.5 ! approximate time of satellite fly-over
+   sat_lon = 15*(sat_loc_time-ihour)
+   swath_width = 1668 ! 2330 for MODIS
+   swath = c0
+
+   dlon = mod((TLOND - sat_lon + 180), 360.0_r8) - 180
+   dx = dlon * (pi/180) * COS(TLATD*(pi/180)) * 6371 ! * (radius/10e5) convert radius of Earth in cm to km
+   where (abs(dx)<(swath_width/2))
+      swath = c1
+   endwhere
 
    ! Set weight to 1
    Chl_sat_weight = c1
-  
-   where ((interior_tendency_forcings(surf_shortwave_ind)%field_1d(:,:,1,bid) .eq. c0) & 
-          .or. (ZEN_weight(:,:) .le. 0.342)) ! &
-          ! .or. (IFRAC(:,:,1) .gt. 0)) 
-        Chl_sat_weight = c0 
-   endwhere  
+   ! Calculate day-light weight
+   where ((COSZEN(:,:,bid) .le. 0.342) &
+      .or. (swath(:,:,bid) .eq. c0)) 
+      Chl_sat_weight = c0 
+   endwhere 
+   
+   ! Accumulate weighted cloud fraction (daylight-only)
+   call accumulate_tavg_field(CLOUDFRAC_MODIS(:,:,bid)*Chl_sat_weight(:,:), tavg_cloudfrac_modis, bid, 1) 
+   call accumulate_tavg_field(CLOUDFRAC_ISCCP(:,:,bid)*Chl_sat_weight(:,:), tavg_cloudfrac_isccp, bid, 1) 
 
-   Chl_sat_weight =  min(Chl_sat_weight, (c1-IFRAC(:,:,bid))/c1)
-  
+   ! Calculate ice weight 
+   Chl_sat_weight =  Chl_sat_weight*(c1-IFRAC(:,:,bid))
+
    ! Accumulate baseline chlor -- everything except for clouds
    call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:), tavg_SatChl_nocld, bid, 1) 
-   ! Accumulate weighted cloud fraction 
-   call accumulate_tavg_field(CLOUDFRAC(:,:,bid)*Chl_sat_weight(:,:), tavg_cloudfrac, bid, 1) 
    ! Accumulate weight for baseline chlor 
    call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_SatChl_weight_nocld, bid, 1)
 
-   Chl_sat_weight = min(Chl_sat_weight, (100._r8-CLOUDFRAC(:,:,bid))/100._r8)
+   ! Calculate cloud/ice weight
+   ! Assume that sea ice and clouds have random overlap
+   Chl_sat_weight_modis = Chl_sat_weight*(c1-(CLOUDFRAC_MODIS(:,:,bid)/100._r8))
+   Chl_sat_weight_isccp = Chl_sat_weight*(c1-(CLOUDFRAC_ISCCP(:,:,bid)/100._r8))
 
-   ! the problem arises with Chl_sat_weight here 
-   ! add where statement?
-   where(Chl_sat_weight(:,:) .lt. c0)
-     Chl_sat_weight(:,:) = c0
-   endwhere
-
-   call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:), tavg_SatChl, bid, 1) 
-   call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_SatChl_weight, bid, 1)
+   ! Accumulate cloudy chlor 
+   call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_modis(:,:), tavg_modis_Chl, bid, 1) 
+   call accumulate_tavg_field(Chl_sat_weight_modis(:,:), tavg_modis_Chl_weight, bid, 1)
+   call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_isccp(:,:), tavg_isccp_Chl, bid, 1) 
+   call accumulate_tavg_field(Chl_sat_weight_isccp(:,:), tavg_isccp_Chl_weight, bid, 1)
 
   end subroutine ecosys_tavg_accumulate_surface
 
