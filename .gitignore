@@ -23,3 +23,6 @@ buildcppc
 # misc
 *.pyc
 *.gz
+
+# code editor settings
+source/.vscode
