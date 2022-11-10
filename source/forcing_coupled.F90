@@ -114,7 +114,7 @@
 
    real (r8), dimension(:), allocatable ::  &
       qsw_12hr_factor
- 
+
 !-----------------------------------------------------------------------
 !  variables for qsw cosz option
 !-----------------------------------------------------------------------
@@ -131,6 +131,7 @@
    real (r8), dimension(:,:,:), allocatable :: &
          QSW_COSZ_WGHT,      & ! weights
          QSW_COSZ_WGHT_NORM    ! normalization for QSW_COSZ_WGHT
+
 
    integer (int_kind), private ::   &
       cpl_ts                ! flag id for coupled_ts flag
@@ -914,7 +915,6 @@
              cosz_day = tday00_interval_beg + interval_cum_dayfrac(nn-1) &
                 - interval_cum_dayfrac(nsteps_per_interval)
       
-             ! Now doing this in forcing_fields... I think
              call compute_cosz(cosz_day, iblock, QSW_COSZ_WGHT(:,:,iblock))
 
              if (interval_avg_ts(nn)) then
@@ -1448,6 +1448,39 @@
       return
    endif
 
+   call POP_HaloUpdate(CLOUDFRAC_MODIS,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+   if (errorCode /= POP_Success) then
+      call POP_ErrorSet(errorCode, &
+         'ocn_import_mct: error updating DIAG CLOUDFRAC_MODIS halo')
+      return
+   endif
+
+   call POP_HaloUpdate(CLOUDFRAC_ISCCP,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+   if (errorCode /= POP_Success) then
+      call POP_ErrorSet(errorCode, &
+         'ocn_import_mct: error updating DIAG CLOUDFRAC_ISCCP halo')
+      return
+   endif
+
+   call POP_HaloUpdate(COSZEN,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+   if (errorCode /= POP_Success) then
+      call POP_ErrorSet(errorCode, &
+         'ocn_import_mct: error updating DIAG COSZEN halo')
+      return
+   endif
+
 #endif
 !-----------------------------------------------------------------------
 !EOC
@@ -1533,73 +1566,73 @@
 
  end subroutine rotate_wind_stress
 
- !***********************************************************************
+!***********************************************************************
 !BOP
 ! !IROUTINE: compute_cosz
 ! !INTERFACE:
 
  subroutine compute_cosz(tday, iblock, COSZ)
 
-   ! !DESCRIPTION:
-   !  This subroutine computes cos of the solar zenith angle.
-   !  Negative values are set to zero.
-   !
-   ! !REVISION HISTORY:
-   !  same as module
-   !
-   ! !USES:
-   
-      use shr_orb_mod, only: shr_orb_decl, shr_orb_cosz
-   
-   ! !INPUT PARAMETERS:
-   
-      real (r8), intent(in) :: tday
-      integer (int_kind), intent(in) :: iblock
-   
-   ! !OUTPUT PARAMETERS:
-   
-      real (r8), dimension(:,:), intent(out) :: COSZ
-   
-   !EOP
-   !BOC
-   !-----------------------------------------------------------------------
-   !
-   !  local variables
-   !
-   !-----------------------------------------------------------------------
-   
-      integer (int_kind) ::   &
-         i, j            ! loop indices
-   
-      real (r8) :: &
-         calday,       & ! Calendar day, including fraction
-         delta,        & ! Solar declination angle in rad
-         eccf            ! Earth-sun distance factor (ie. (1/r)**2)
-   
-   !-----------------------------------------------------------------------
-   
-      ! call timer_start(timer_compute_cosz, block_id=iblock)
-   
-   !  shr_orb code assumes Jan 1 = calday 1, unlike Jan 1 = tday 0
-      calday = tday + c1
-   
-      call shr_orb_decl(calday, orb_eccen, orb_mvelpp, orb_lambm0, &
-                        orb_obliqr, delta, eccf)
-   
-      do j = 1, ny_block
-         do i = 1, nx_block
-            COSZ(i,j) = shr_orb_cosz(calday, TLAT(i,j,iblock), &
-                                       TLON(i,j,iblock), delta)
-            COSZ(i,j) = max(c0, COSZ(i,j))
-         enddo
+! !DESCRIPTION:
+!  This subroutine computes cos of the solar zenith angle.
+!  Negative values are set to zero.
+!
+! !REVISION HISTORY:
+!  same as module
+!
+! !USES:
+
+   use shr_orb_mod, only: shr_orb_decl, shr_orb_cosz
+
+! !INPUT PARAMETERS:
+
+   real (r8), intent(in) :: tday
+   integer (int_kind), intent(in) :: iblock
+
+! !OUTPUT PARAMETERS:
+
+   real (r8), dimension(:,:), intent(out) :: COSZ
+
+!EOP
+!BOC
+!-----------------------------------------------------------------------
+!
+!  local variables
+!
+!-----------------------------------------------------------------------
+
+   integer (int_kind) ::   &
+      i, j            ! loop indices
+
+   real (r8) :: &
+      calday,       & ! Calendar day, including fraction
+      delta,        & ! Solar declination angle in rad
+      eccf            ! Earth-sun distance factor (ie. (1/r)**2)
+
+!-----------------------------------------------------------------------
+
+   call timer_start(timer_compute_cosz, block_id=iblock)
+
+!  shr_orb code assumes Jan 1 = calday 1, unlike Jan 1 = tday 0
+   calday = tday + c1
+
+   call shr_orb_decl(calday, orb_eccen, orb_mvelpp, orb_lambm0, &
+                     orb_obliqr, delta, eccf)
+
+   do j = 1, ny_block
+      do i = 1, nx_block
+         COSZ(i,j) = shr_orb_cosz(calday, TLAT(i,j,iblock), &
+                                    TLON(i,j,iblock), delta)
+         COSZ(i,j) = max(c0, COSZ(i,j))
       enddo
-   
-      ! call timer_stop(timer_compute_cosz, block_id=iblock)
-   
-   !-----------------------------------------------------------------------
-   !EOC
-   
-   end subroutine compute_cosz
+   enddo
+
+   call timer_stop(timer_compute_cosz, block_id=iblock)
+
+!-----------------------------------------------------------------------
+!EOC
+
+end subroutine compute_cosz
 
 
 !***********************************************************************
