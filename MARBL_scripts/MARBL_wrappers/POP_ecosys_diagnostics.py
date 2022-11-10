@@ -50,6 +50,10 @@ def write_ecosys_diagnostics_file(active_tracers, autotroph_list, zooplankton_li
     fout.write("totChl_modis_wgt : high_average\n")
     fout.write("totChl_isccp : high_average\n")
     fout.write("totChl_isccp_wgt : high_average\n")
+    fout.write("totChl_modis_1 : high_average\n")
+    fout.write("totChl_modis_wgt_1 : high_average\n")
+    fout.write("totChl_sat_nocld_1 : high_average\n")
+    fout.write("totChl_sat_nocld_wgt_1 : high_average\n")
     fout.write("cloudfrac_modis : high_average\n")
     fout.write("cloudfrac_isccp : high_average\n")
 
