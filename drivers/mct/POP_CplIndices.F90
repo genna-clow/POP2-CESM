@@ -35,7 +35,6 @@ module POP_CplIndices
   integer :: index_x2o_Sa_m_cloudfrac  ! MODIS cloud fraction
   integer :: index_x2o_Sa_i_cloudfrac  ! ISCCP cloud fraction
   integer :: index_x2o_Sa_coszen       ! cos solar zenith angle
- 
   integer :: index_x2o_Sw_lamult       ! wave model langmuir multiplier
   integer :: index_x2o_Sw_ustokes      ! surface Stokes drift, x-component
   integer :: index_x2o_Sw_vstokes      ! surface Stokes drift, y-component
@@ -155,6 +154,7 @@ contains
     index_x2o_Sa_m_cloudfrac  = mct_avect_indexra(x2o,'Sa_m_cloudfrac')
     index_x2o_Sa_i_cloudfrac  = mct_avect_indexra(x2o,'Sa_i_cloudfrac')
     index_x2o_Sa_coszen     = mct_avect_indexra(x2o,'Sa_coszen')
+    
     ! optional per thickness category fields
 
     ! convert cpl indices to mcog column indices

@@ -38,7 +38,7 @@ module ecosys_driver
   use ecosys_tavg               , only : ecosys_tavg_accumulate_interior
   use ecosys_tavg               , only : ecosys_tavg_accumulate_surface
   use ecosys_tavg               , only : ecosys_tavg_accumulate_scalar_rmeans
-  use ecosys_tavg               , only : totChl_surf_nf_ind ! new line
+  use ecosys_tavg               , only : totChl_surf_nf_ind
 
   use passive_tracer_tools      , only : tracer_read
 
@@ -107,7 +107,6 @@ module ecosys_driver
 
   type(marbl_interface_class) :: marbl_instances(max_blocks_clinic)
 
-  ! integer (int_kind)  :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer ! moved to ecosys_tavg.F90
   integer (int_kind)  :: sflux_co2_nf_ind   = 0 ! air-sea co2 gas flux
 
   character (char_len)               :: ecosys_tadvect_ctype          ! advection method for ecosys tracers
