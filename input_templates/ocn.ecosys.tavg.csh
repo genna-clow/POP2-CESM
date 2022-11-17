@@ -21,6 +21,7 @@ endif
 @ s1 = 1             # use the base-model stream 1
 @ s2 = $my_stream    # use an ecosystem-defined stream
 @ s3 = $s2 + 1       # use an ecosystem-defined stream
+@ s4 = $s3 + 1       # use an ecosystem-defined stream
 
 set lecosys_tavg_all     = $2
 set lecosys_tavg_alt_co2 = $3
@@ -28,20 +29,20 @@ set lecosys_tavg_alt_co2 = $3
 if ($lecosys_tavg_all == ".false.") then
 
   cat >! $CASEBUILD/popconf/ecosys.tavg.nml << EOF
-tavg_freq_opt             = 'nday'   'nyear'
-tavg_freq                 =  1       1
-tavg_file_freq_opt        = 'nmonth' 'nyear'
-tavg_file_freq            =  1       1
-tavg_start_opt            = 'nstep'  'nstep'
-tavg_start                =  0       0
-tavg_fmt_in               = 'nc'     'nc'
-tavg_fmt_out              = 'nc'     'nc'
-ltavg_has_offset_date     = .false.  .false.
-tavg_offset_years         =  1       1
-tavg_offset_months        =  1       1
-tavg_offset_days          =  2       2
-ltavg_one_time_header     = .false.  .false.
-tavg_stream_filestrings   = 'ecosys.nday1' 'ecosys.nyear1'
+tavg_freq_opt             = 'nday'   'nyear'   'nhour'
+tavg_freq                 =  1       1         1
+tavg_file_freq_opt        = 'nmonth' 'nyear'   'nmonth'
+tavg_file_freq            =  1       1         1
+tavg_start_opt            = 'nstep'  'nstep'   'nstep'
+tavg_start                =  0       0         0
+tavg_fmt_in               = 'nc'     'nc'      'nc'
+tavg_fmt_out              = 'nc'     'nc'      'nc'
+ltavg_has_offset_date     = .false.  .false.   .false.
+tavg_offset_years         =  1       1         1
+tavg_offset_months        =  1       1         1
+tavg_offset_days          =  2       2         2
+ltavg_one_time_header     = .false.  .false.   .false.
+tavg_stream_filestrings   = 'ecosys.nday1' 'ecosys.nyear1'   'ecosys.nhour1'
 EOF
 
 else
@@ -63,6 +64,7 @@ set MARBL_args = "$MARBL_args -o $CASEBUILD/popconf/marbl_diagnostics_operators"
 set MARBL_args = "$MARBL_args --low_frequency_stream $s3 "
 set MARBL_args = "$MARBL_args --medium_frequency_stream $s1"
 set MARBL_args = "$MARBL_args --high_frequency_stream $s2"
+set MARBL_args = "$MARBL_args --hourly_frequency_stream $s4"
 
 if ($lecosys_tavg_all == ".true.") then
   set MARBL_args = "$MARBL_args --lMARBL_tavg_all True --lMARBL_tavg_alt_co2 True"
