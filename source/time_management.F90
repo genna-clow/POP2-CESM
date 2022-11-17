@@ -172,7 +172,7 @@
    character (1) ::        &
       date_separator        ! character to separate year-month-day
 
-   integer (int_kind), public ::   &  !! Added public here 
+   integer (int_kind), public ::   &
       iyear               ,&! year    [0,inf)  for present timestep
       imonth              ,&! month   [1,12]          |
       iday                ,&! day     [1,31]          |

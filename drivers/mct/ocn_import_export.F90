@@ -486,7 +486,7 @@ contains
 
       call named_field_set(ATM_NOy_nf_ind, WORK1)
    endif
-   
+
 !-----------------------------------------------------------------------
 !
 !  diagnostics

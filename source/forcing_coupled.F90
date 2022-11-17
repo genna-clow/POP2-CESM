@@ -129,8 +129,8 @@
       orb_mvelpp                ! Earths Moving vernal equinox of orbit +pi
 
    real (r8), dimension(:,:,:), allocatable :: &
-         QSW_COSZ_WGHT,      & ! weights
-         QSW_COSZ_WGHT_NORM    ! normalization for QSW_COSZ_WGHT
+      QSW_COSZ_WGHT,      & ! weights
+      QSW_COSZ_WGHT_NORM    ! normalization for QSW_COSZ_WGHT
 
 
    integer (int_kind), private ::   &
@@ -914,7 +914,7 @@
           do nn = 1, nsteps_per_interval
              cosz_day = tday00_interval_beg + interval_cum_dayfrac(nn-1) &
                 - interval_cum_dayfrac(nsteps_per_interval)
-      
+
              call compute_cosz(cosz_day, iblock, QSW_COSZ_WGHT(:,:,iblock))
 
              if (interval_avg_ts(nn)) then
@@ -1622,7 +1622,7 @@
    do j = 1, ny_block
       do i = 1, nx_block
          COSZ(i,j) = shr_orb_cosz(calday, TLAT(i,j,iblock), &
-                                    TLON(i,j,iblock), delta)
+                                 TLON(i,j,iblock), delta)
          COSZ(i,j) = max(c0, COSZ(i,j))
       enddo
    enddo
@@ -1633,7 +1633,6 @@
 !EOC
 
 end subroutine compute_cosz
-
 
 !***********************************************************************
 
