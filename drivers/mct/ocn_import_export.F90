@@ -286,7 +286,7 @@ contains
          
          ! satellite emulator variables
          ! convert negative numbers to zero
-         CLOUDFRAC_MODIS(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_m_cloudfrac,n)))
+         ! CLOUDFRAC_MODIS(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_m_cloudfrac,n)))
          CLOUDFRAC_ISCCP(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_i_cloudfrac,n)))
          COSZEN(i,j,iblock) = x2o(index_x2o_Sa_coszen,n)
 

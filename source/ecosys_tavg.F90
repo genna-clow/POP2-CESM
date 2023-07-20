@@ -53,21 +53,21 @@
   
     integer (int_kind), public :: totChl_surf_nf_ind = 0 ! total chlorophyll in surface layer 
     integer (int_kind) :: tavg_Chl 
-    integer (int_kind) :: tavg_SatChl_nocld 
-    integer (int_kind) :: tavg_SatChl_weight_nocld
-    integer (int_kind) :: tavg_isccp_Chl
-    integer (int_kind) :: tavg_isccp_Chl_weight
-    integer (int_kind) :: tavg_modis_Chl
-    integer (int_kind) :: tavg_modis_Chl_weight
-    integer (int_kind) :: tavg_modis_Chl_swath
-    integer (int_kind) :: tavg_modis_Chl_weight_swath
-    integer (int_kind) :: tavg_SatChl_nocld_swath
-    integer (int_kind) :: tavg_SatChl_weight_nocld_swath
-    integer (int_kind) :: tavg_cloudfrac_modis
-    integer (int_kind) :: tavg_cloudfrac_isccp
+    integer (int_kind) :: tavg_clearsky_Chl ! changed from tavg_SatChl_nocld
+    integer (int_kind) :: tavg_clearsky_Chl_wgt ! changed from tavg_SatChl_weight_nocld
+    integer (int_kind) :: tavg_cloudy_Chl ! changed from tavg_isccp_Chl
+    integer (int_kind) :: tavg_cloudy_Chl_wgt ! changed from tavg_isccp_Chl_weight
+    ! integer (int_kind) :: tavg_modis_Chl
+    ! integer (int_kind) :: tavg_modis_Chl_weight
+    ! integer (int_kind) :: tavg_modis_Chl_swath
+    ! integer (int_kind) :: tavg_modis_Chl_weight_swath
+    integer (int_kind) :: tavg_clearsky_Chl_swath
+    integer (int_kind) :: tavg_clearsky_Chl_swath_wgt
+    ! integer (int_kind) :: tavg_cloudfrac_modis
+    integer (int_kind) :: tavg_cloudfrac ! changed from tavg_cloudfrac_isccp
     integer (int_kind) :: tavg_cloudfrac_wgt
-    integer (int_kind) :: tavg_cloudfrac_modis_swath
-    integer (int_kind) :: tavg_cloudfrac_modis_wgt_swath
+    integer (int_kind) :: tavg_cloudfrac_swath ! changed from tavg_cloudfrac_modis_swath
+    integer (int_kind) :: tavg_cloudfrac_swath_wgt ! changed from tavg_cloudfrac_modis_wgt_swath
     
     integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
     integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
