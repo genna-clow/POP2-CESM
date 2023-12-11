@@ -92,8 +92,7 @@ module forcing_fields
       ATM_COARSE_DUST_FLUX,     &! coarse dust flux from atm from cpl (g/cm2/s)
       SEAICE_DUST_FLUX,         &! coarse dust flux from seaice from cpl (g/cm2/s)
       ATM_BLACK_CARBON_FLUX,    &! black carbon flux from atm from cpl (g/cm2/s)
-      SEAICE_BLACK_CARBON_FLUX, &! black carbon flux from seaice from cpl (g/cm2/s)
-     ! CLOUDFRAC_MODIS,          &! MODIS cloud fraction 
+      SEAICE_BLACK_CARBON_FLUX, &! black carbon flux from seaice from cpl (g/cm2/s) 
       CLOUDFRAC_ISCCP,          &! ISCCP cloud fraction 
       COSZEN                     ! cosine solar zenith angle
 
