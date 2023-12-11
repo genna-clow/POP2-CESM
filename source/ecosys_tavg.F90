@@ -57,17 +57,12 @@
     integer (int_kind) :: tavg_clearsky_Chl_wgt ! changed from tavg_SatChl_weight_nocld
     integer (int_kind) :: tavg_cloudy_Chl ! changed from tavg_isccp_Chl
     integer (int_kind) :: tavg_cloudy_Chl_wgt ! changed from tavg_isccp_Chl_weight
-    ! integer (int_kind) :: tavg_modis_Chl
-    ! integer (int_kind) :: tavg_modis_Chl_weight
-    ! integer (int_kind) :: tavg_modis_Chl_swath
-    ! integer (int_kind) :: tavg_modis_Chl_weight_swath
+    integer (int_kind) :: tavg_cloudy_Chl_swath ! new
+    integer (int_kind) :: tavg_cloudy_Chl_swath_wgt ! new
     integer (int_kind) :: tavg_clearsky_Chl_swath
     integer (int_kind) :: tavg_clearsky_Chl_swath_wgt
-    ! integer (int_kind) :: tavg_cloudfrac_modis
     integer (int_kind) :: tavg_cloudfrac ! changed from tavg_cloudfrac_isccp
     integer (int_kind) :: tavg_cloudfrac_wgt
-    integer (int_kind) :: tavg_cloudfrac_swath ! changed from tavg_cloudfrac_modis_swath
-    integer (int_kind) :: tavg_cloudfrac_swath_wgt ! changed from tavg_cloudfrac_modis_wgt_swath
     
     integer (int_kind), allocatable :: tavg_ids_scalar_rmean_interior(:)
     integer (int_kind), allocatable :: tavg_ids_scalar_rmean_surface(:)
@@ -137,82 +132,71 @@
                              units='mg/m^3', grid_loc='2110',      &
                              coordinates='TLONG TLAT time')
       
-      call define_tavg_field(tavg_SatChl_nocld,'totChl_sat_nocld',2,              &
+      call define_tavg_field(tavg_clearsky_Chl,'totChl_clearsky',2,              &
                              long_name='Satellite-Observed Surface Chlorophyll Without Clouds',   &
                              units='mg/m^3', grid_loc='2110',      &
                              coordinates='TLONG TLAT time') 
                              
-      call define_tavg_field(tavg_SatChl_weight_nocld,'totChl_sat_nocld_wgt',2,              &
+      call define_tavg_field(tavg_clearsky_Chl_wgt,'totChl_clearsky_wgt',2,              &
                              long_name='Weight for Satellite-Observed Surface Chlorophyll Without Clouds',   &
                              units='none', grid_loc='2110',      &
                              coordinates='TLONG TLAT time') 
   
-      call define_tavg_field(tavg_isccp_Chl,'totChl_isccp',2,              &
+      call define_tavg_field(tavg_cloudy_Chl,'totChl_cloudy',2,              &
                              long_name='ISCCP-Observed Surface Chlorophyll',   &
                              units='mg/m^3', grid_loc='2110',      &
                              coordinates='TLONG TLAT time')
   
-      call define_tavg_field(tavg_isccp_Chl_weight,'totChl_isccp_wgt',2,              &
+      call define_tavg_field(tavg_cloudy_Chl_wgt,'totChl_cloudy_wgt',2,              &
                              long_name='Weight for ISCCP-Observed Surface Chlorophyll',   &
                              units='none', grid_loc='2110',      &
                              coordinates='TLONG TLAT time')
   
-      call define_tavg_field(tavg_modis_Chl,'totChl_modis',2,              &
-                             long_name='MODIS-Observed Surface Chlorophyll',   &
-                             units='mg/m^3', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
-  
-      call define_tavg_field(tavg_modis_Chl_weight,'totChl_modis_wgt',2,              &
-                             long_name='Weight for MODIS-Observed Surface Chlorophyll',   &
-                             units='none', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
-    
-      !! MODIS swath at 1:30 pm                        
-      call define_tavg_field(tavg_modis_Chl_swath,'totChl_modis_swath',2,              &
-                             long_name='MODIS-Observed Surface Chlorophyll at 1:30pm',   &
-                             units='mg/m^3', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
-  
-      call define_tavg_field(tavg_modis_Chl_weight_swath,'totChl_modis_wgt_swath',2,              &
-                             long_name='Weight for MODIS-Observed Surface Chlorophyll at 1:30pm',   &
-                             units='none', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
-  
-      call define_tavg_field(tavg_SatChl_nocld_swath,'totChl_sat_nocld_swath',2,              &
-                             long_name='Satellite-Observed Surface Chlorophyll Without Cloudsat 1:30pm',   &
+      call define_tavg_field(tavg_cloudy_Chl_swath,'totChl_cloudy_swath',2,              &
+                             long_name='Satellite-Observed Surface Chlorophyll at 1:30pm',   &
                              units='mg/m^3', grid_loc='2110',      &
                              coordinates='TLONG TLAT time') 
                              
-      call define_tavg_field(tavg_SatChl_weight_nocld_swath,'totChl_sat_nocld_wgt_swath',2,              &
+      call define_tavg_field(tavg_cloudy_Chl_swath_wgt,'totChl_cloudy_swath_wgt',2,              &
+                             long_name='Weight for Satellite-Observed Surface Chlorophyll Without Clouds at 1:30pm',   &
+                             units='none', grid_loc='2110',      &
+                             coordinates='TLONG TLAT time') 
+
+      call define_tavg_field(tavg_clearsky_Chl_swath,'totChl_clearsky_swath',2,              &
+                             long_name='Satellite-Observed Surface Chlorophyll at 1:30pm',   &
+                             units='mg/m^3', grid_loc='2110',      &
+                             coordinates='TLONG TLAT time') 
+                             
+      call define_tavg_field(tavg_clearsky_Chl_swath_wgt,'totChl_clearsky_swath_wgt',2,              &
                              long_name='Weight for Satellite-Observed Surface Chlorophyll Without Clouds at 1:30pm',   &
                              units='none', grid_loc='2110',      &
                              coordinates='TLONG TLAT time') 
       
       !! Clouds
-      call define_tavg_field(tavg_cloudfrac_modis,'cloudfrac_modis',2,              &
-                             long_name='MODIS cloud fraction',   &
-                             units='%', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
+      ! call define_tavg_field(tavg_cloudfrac_modis,'cloudfrac_modis',2,              &
+      !                        long_name='MODIS cloud fraction',   &
+      !                        units='%', grid_loc='2110',      &
+      !                        coordinates='TLONG TLAT time')
   
-      call define_tavg_field(tavg_cloudfrac_isccp,'cloudfrac_isccp',2,              &
+      call define_tavg_field(tavg_cloudfrac,'cloudfrac_isccp',2,              &
                              long_name='ISCCP cloud fraction',   &
                              units='%', grid_loc='2110',      &
                              coordinates='TLONG TLAT time') 
       
-      call define_tavg_field(tavg_cloudfrac_wgt,'cloudfrac_wgt',2,              &
+      call define_tavg_field(tavg_cloudfrac_wgt,'cloudfrac_isccp_wgt',2,              &
                              long_name='Weight for MODIS and ISCCP cloud fraction',   &
                              units='%', grid_loc='2110',      &
                              coordinates='TLONG TLAT time')
   
-      call define_tavg_field(tavg_cloudfrac_modis_swath,'cloudfrac_modis_swath',2,              &
-                             long_name='MODIS cloud fraction at 1:30pm',   &
-                             units='%', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
+      ! call define_tavg_field(tavg_cloudfrac_modis_swath,'cloudfrac_modis_swath',2,              &
+      !                        long_name='MODIS cloud fraction at 1:30pm',   &
+      !                        units='%', grid_loc='2110',      &
+      !                        coordinates='TLONG TLAT time')
   
-      call define_tavg_field(tavg_cloudfrac_modis_wgt_swath,'cloudfrac_modis_wgt_swath',2,              &
-                             long_name='Weight for MODIS cloud fraction at 1:30pm',   &
-                             units='%', grid_loc='2110',      &
-                             coordinates='TLONG TLAT time')
+      ! call define_tavg_field(tavg_cloudfrac_modis_wgt_swath,'cloudfrac_modis_wgt_swath',2,              &
+      !                        long_name='Weight for MODIS cloud fraction at 1:30pm',   &
+      !                        units='%', grid_loc='2110',      &
+      !                        coordinates='TLONG TLAT time')
   
   
       rmean_var_cnt = size(marbl_instance%glo_scalar_rmean_interior_tendency)
@@ -241,8 +225,7 @@
       use named_field_mod,                    only : named_field_get
       use blocks,                             only : nx_block, ny_block 
       use domain_size, only: max_blocks_clinic
-      use forcing_fields,                     only : IFRAC, COSZEN, &
-                                                     CLOUDFRAC_MODIS, CLOUDFRAC_ISCCP
+      use forcing_fields,                     only : IFRAC, CLOUDFRAC_ISCCP, COSZEN ! , CLOUDFRAC_MODIS
       use grid,                               only : TLOND, TLAT
   
       implicit none
@@ -255,8 +238,6 @@
       real (r8)                               :: CHL(nx_block,ny_block) ! total surface chlorophyll conc.
       real (r8)                               :: no_ice_weight(nx_block, ny_block) ! weight for cloud outputs
       real (r8)                               :: Chl_sat_weight(nx_block, ny_block) ! weight to mask all cells not viewable by satellite
-      real (r8)                               :: cloud_weight_modis(nx_block, ny_block) ! cloud weight for MODIS
-      real (r8)                               :: Chl_sat_weight_modis(nx_block, ny_block) ! chl weight for MODIS
       real (r8)                               :: cloud_weight_isccp(nx_block, ny_block) ! cloud weight for ISCCP
       real (r8)                               :: Chl_sat_weight_isccp(nx_block, ny_block) ! chl weight for ISCCP
       real (r8)                               :: sat_loc_time ! approximate time of satellite fly-over 
@@ -265,7 +246,6 @@
       real (r8)                               :: swath(nx_block, ny_block, max_blocks_clinic) ! swath mask
       real (r8)                               :: dlon(nx_block, ny_block, max_blocks_clinic) ! distance to satellite longitude in degrees
       real (r8)                               :: dx(nx_block, ny_block, max_blocks_clinic) ! distance to satellite longitude in km
-  
       !-----------------------------------------------------------------------
   
       ! Accumulate surface_flux_diags
@@ -283,7 +263,7 @@
      
      ! Accumulate total chlorophyll field
      call accumulate_tavg_field(CHL(:,:), tavg_Chl, bid, 1) 
-      
+    
      ! approximate times of satellite fly-overs (Terra and Aqua): 10:30am and 1:30pm
      ! calculate the longitude that corresponds with 1:30
      ! CAM time = POP time - 1
@@ -300,48 +280,40 @@
      ! Set weight to 1
      no_ice_weight = c1
      ! Calculate day-light weight
-     where (COSZEN(:,:,bid) .le. 0.342_r8) 
+     where (COSZEN(:,:,bid) .le. 0.342_r8)
         no_ice_weight = c0 
      endwhere 
      
      ! Accumulate weighted cloud fraction (daylight-only)
-     call accumulate_tavg_field(CLOUDFRAC_MODIS(:,:,bid)*no_ice_weight(:,:), tavg_cloudfrac_modis, bid, 1)
-     call accumulate_tavg_field(CLOUDFRAC_ISCCP(:,:,bid)*no_ice_weight(:,:), tavg_cloudfrac_isccp, bid, 1)
+     call accumulate_tavg_field(CLOUDFRAC_ISCCP(:,:,bid)*no_ice_weight(:,:), tavg_cloudfrac, bid, 1)
      call accumulate_tavg_field(no_ice_weight(:,:), tavg_cloudfrac_wgt, bid, 1)
-  
+
      ! Calculate ice weight 
      Chl_sat_weight =  no_ice_weight*(c1-IFRAC(:,:,bid))
   
      ! Accumulate baseline chlor -- everything except for clouds
-     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:), tavg_SatChl_nocld, bid, 1)
+     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:), tavg_clearsky_Chl, bid, 1)
      ! Accumulate weight for baseline chlor 
-     call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_SatChl_weight_nocld, bid, 1)
+     call accumulate_tavg_field(Chl_sat_weight(:,:), tavg_clearsky_Chl_wgt, bid, 1)
   
      ! Calculate cloud/ice weight
      ! Assume that sea ice and clouds have random overlap
-     Chl_sat_weight_modis = Chl_sat_weight*(c1-(CLOUDFRAC_MODIS(:,:,bid)*0.01_r8))
      Chl_sat_weight_isccp = Chl_sat_weight*(c1-(CLOUDFRAC_ISCCP(:,:,bid)*0.01_r8))
   
      ! Accumulate cloudy chlor 
-     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_modis(:,:), tavg_modis_Chl, bid, 1)
-     call accumulate_tavg_field(Chl_sat_weight_modis(:,:), tavg_modis_Chl_weight, bid, 1)
-     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_isccp(:,:), tavg_isccp_Chl, bid, 1)
-     call accumulate_tavg_field(Chl_sat_weight_isccp(:,:), tavg_isccp_Chl_weight, bid, 1)
+     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_isccp(:,:), tavg_cloudy_Chl, bid, 1)
+     call accumulate_tavg_field(Chl_sat_weight_isccp(:,:), tavg_cloudy_Chl_wgt, bid, 1)
   
      ! Accumulate variables within satellite swath
-     ! MODIS Chl 1:30pm
-     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_modis(:,:)*swath(:,:,bid), tavg_modis_Chl_swath, bid, 1)
-     ! Weight for MODIS chl 1:30pm
-     call accumulate_tavg_field(Chl_sat_weight_modis(:,:)*swath(:,:,bid), tavg_modis_Chl_weight_swath, bid, 1)
+     ! ISCCP Chl 1:30pm
+     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight_isccp(:,:)*swath(:,:,bid), tavg_cloudy_Chl_swath, bid, 1)
+     ! Weight for ISCCP chl 1:30pm
+     call accumulate_tavg_field(Chl_sat_weight_isccp(:,:)*swath(:,:,bid), tavg_cloudy_Chl_swath_wgt, bid, 1)
      ! Baseline chlor 1:30pm
-     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:)*swath(:,:,bid), tavg_SatChl_nocld_swath, bid, 1)
+     call accumulate_tavg_field(CHL(:,:)*Chl_sat_weight(:,:)*swath(:,:,bid), tavg_clearsky_Chl_swath, bid, 1)
      ! Weight for baseline chlor 1:30pm
-     call accumulate_tavg_field(Chl_sat_weight(:,:)*swath(:,:,bid), tavg_SatChl_weight_nocld_swath, bid, 1)
-     ! MODIS clouds 1:30pm
-     call accumulate_tavg_field(CLOUDFRAC_MODIS(:,:,bid)*no_ice_weight(:,:)*swath(:,:,bid), tavg_cloudfrac_modis_swath, bid, 1)
-     ! Weight for MODIS clouds 1:30pm
-     call accumulate_tavg_field(no_ice_weight(:,:)*swath(:,:,bid), tavg_cloudfrac_modis_wgt_swath, bid, 1)
-     
+     call accumulate_tavg_field(Chl_sat_weight(:,:)*swath(:,:,bid), tavg_clearsky_Chl_swath_wgt, bid, 1)
+
     end subroutine ecosys_tavg_accumulate_surface
   
     !***********************************************************************
