@@ -41,24 +41,19 @@ def write_ecosys_diagnostics_file(active_tracers, autotroph_list, zooplankton_li
     fout.write("ATM_BLACK_CARBON_FLUX_CPL : medium_average\n")
     fout.write("SEAICE_BLACK_CARBON_FLUX_CPL : medium_average\n")
 
-    # Add satellite emulator fields
+    # Add satellite simulator fields
     fout.write("# Chlorophyll satellite emulator fields\n#\n")
-    fout.write("totChl : hourly_average\n") 
-    fout.write("totChl_sat_nocld : hourly_average\n")
-    fout.write("totChl_sat_nocld_wgt : hourly_average\n")
-    fout.write("totChl_modis : hourly_average\n")
-    fout.write("totChl_modis_wgt : hourly_average\n")
-    fout.write("totChl_isccp : hourly_average\n")
-    fout.write("totChl_isccp_wgt : hourly_average\n")
-    fout.write("totChl_modis_swath : hourly_average\n")
-    fout.write("totChl_modis_wgt_swath : hourly_average\n")
-    fout.write("totChl_sat_nocld_swath : hourly_average\n")
-    fout.write("totChl_sat_nocld_wgt_swath : hourly_average\n")
-    fout.write("cloudfrac_modis : hourly_average\n")
-    fout.write("cloudfrac_isccp : hourly_average\n")
-    fout.write("cloudfrac_wgt : hourly_average\n")
-    fout.write("cloudfrac_modis_swath : hourly_average\n")
-    fout.write("cloudfrac_modis_wgt_swath : hourly_average\n")
+    fout.write("totChl : sat_average\n") 
+    fout.write("totChl_clearsky : sat_average\n") # totChl_sat_nocld
+    fout.write("totChl_clearsky_wgt : sat_average\n") # totChl_sat_nocld_wgt
+    fout.write("totChl_cloudy : sat_average\n") # totChl_isccp
+    fout.write("totChl_cloudy_wgt : sat_average\n") # totChl_isccp_wgt
+    fout.write("totChl_cloudy_swath : sat_average\n") # new
+    fout.write("totChl_cloudy_swath_wgt : sat_average\n") # new
+    fout.write("totChl_clearsky_swath : sat_average\n") # totChl_sat_nocld_swath
+    fout.write("totChl_clearsky_swath_wgt : sat_average\n") # totChl_sat_nocld_wgt_swath
+    fout.write("cloudfrac_isccp : sat_average\n")
+    fout.write("cloudfrac_isccp_wgt : sat_average\n")
 
     # If adjusting bury coefficients, add running means to requested diagnostics
     if ladjust_bury_coeff:

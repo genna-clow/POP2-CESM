@@ -87,8 +87,11 @@ def _parse_args():
     parser.add_argument('-g', '--high_frequency_stream', action='store', dest='high_frequency_stream',
                         type=int, default= 0, help='Stream to put high frequency output into (required if not lMARBL_tavg_all)')
     
-    parser.add_argument('-r', '--hourly_frequency_stream', action='store', dest='hourly_frequency_stream',
-                        type=int, default= 0, help='Stream to put hourly output into (required if not lMARBL_tavg_all)')
+    # parser.add_argument('-r', '--hourly_frequency_stream', action='store', dest='hourly_frequency_stream',
+    #                     type=int, default= 0, help='Stream to put hourly output into (required if not lMARBL_tavg_all)')
+
+    parser.add_argument('-r', '--sat_frequency_stream', action='store', dest='sat_frequency_stream',
+                        type=int, default= 0, help='Stream to put satellite simulator output into (required if not lMARBL_tavg_all)')
 
     # Should all MARBL diagnostics be included in the first tavg stream?
     parser.add_argument('--lMARBL_tavg_all', action='store', dest='lMARBL_tavg_all',
@@ -272,7 +275,8 @@ if __name__ == "__main__":
     frequency_dict['low'] = args.low_frequency_stream
     frequency_dict['medium'] = args.medium_frequency_stream
     frequency_dict['high'] = args.high_frequency_stream
-    frequency_dict['hourly'] = args.hourly_frequency_stream
+    # frequency_dict['hourly'] = args.hourly_frequency_stream
+    frequency_dict['sat'] = args.sat_frequency_stream
 
     import logging
     logging.basicConfig(format='%(levelname)s (%(funcName)s): %(message)s', level=logging.DEBUG)
