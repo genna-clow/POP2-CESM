@@ -34,7 +34,7 @@ module ocn_import_export
    use forcing_fields,    only: LAMULT, USTOKES, VSTOKES, LASL
    use forcing_fields,    only: ATM_FINE_DUST_FLUX, ATM_COARSE_DUST_FLUX, SEAICE_DUST_FLUX
    use forcing_fields,    only: ATM_BLACK_CARBON_FLUX, SEAICE_BLACK_CARBON_FLUX
-   use forcing_fields,    only: CLOUDFRAC_MODIS, CLOUDFRAC_ISCCP, COSZEN
+   use forcing_fields,    only: CLOUDFRAC_ISCCP
    use mcog,              only: lmcog, mcog_ncols, import_mcog
    use forcing_coupled,   only: ncouple_per_day,  &
                                 update_ghost_cells_coupler_fluxes, &
@@ -284,11 +284,9 @@ contains
          SEAICE_BLACK_CARBON_FLUX(i,j,iblock) = 0.1_r8 * RCALCT(i,j,iblock) * ( &
             x2o(index_x2o_Fioi_bcpho,n) + x2o(index_x2o_Fioi_bcphi,n))
          
-         ! satellite emulator variables
+         ! satellite simulator variables
          ! convert negative numbers to zero
-         ! CLOUDFRAC_MODIS(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_m_cloudfrac,n)))
          CLOUDFRAC_ISCCP(i,j,iblock) = max(c0,min(100._r8,x2o(index_x2o_Sa_i_cloudfrac,n)))
-         COSZEN(i,j,iblock) = x2o(index_x2o_Sa_coszen,n)
 
       enddo
       enddo

@@ -32,9 +32,7 @@ module POP_CplIndices
   integer :: index_x2o_Sa_co2diag      ! bottom atm level diagnostic CO2
   integer :: index_x2o_Faxa_nhx        ! nitrogen deposition (nhx) flux from atm (kgNm2/sec)
   integer :: index_x2o_Faxa_noy        ! nitrogen deposition (noy) flux from atm (kgNm2/sec)
-  ! integer :: index_x2o_Sa_m_cloudfrac  ! MODIS cloud fraction
   integer :: index_x2o_Sa_i_cloudfrac  ! ISCCP cloud fraction
-  integer :: index_x2o_Sa_coszen       ! cos solar zenith angle
   integer :: index_x2o_Sw_lamult       ! wave model langmuir multiplier
   integer :: index_x2o_Sw_ustokes      ! surface Stokes drift, x-component
   integer :: index_x2o_Sw_vstokes      ! surface Stokes drift, y-component
@@ -151,10 +149,8 @@ contains
     index_x2o_Sa_co2diag    = mct_avect_indexra(x2o,'Sa_co2diag',perrWith='quiet')
     index_x2o_Faxa_nhx      = mct_avect_indexra(x2o,'Faxa_nhx',perrWith='quiet')
     index_x2o_Faxa_noy      = mct_avect_indexra(x2o,'Faxa_noy',perrWith='quiet')
-    ! index_x2o_Sa_m_cloudfrac  = mct_avect_indexra(x2o,'Sa_m_cloudfrac')
     index_x2o_Sa_i_cloudfrac  = mct_avect_indexra(x2o,'Sa_i_cloudfrac')
-    index_x2o_Sa_coszen     = mct_avect_indexra(x2o,'Sa_coszen')
-    
+
     ! optional per thickness category fields
 
     ! convert cpl indices to mcog column indices
