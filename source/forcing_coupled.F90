@@ -511,11 +511,11 @@
 !  initialize timer for computing cosz
 !
 !-----------------------------------------------------------------------
-
-   if ( qsw_distrb_iopt == qsw_distrb_iopt_cosz ) then
-      call get_timer (timer_compute_cosz, 'COMPUTE_COSZ', nblocks_clinic, &
-                                          distrb_clinic%nprocs)
-   endif
+! comment out the if statement here to avoid ERROR: Model did not complete
+   ! if ( qsw_distrb_iopt == qsw_distrb_iopt_cosz ) then
+   ! call get_timer (timer_compute_cosz, 'COMPUTE_COSZ', nblocks_clinic, &
+   !                                        distrb_clinic%nprocs)
+   ! endif
 !-----------------------------------------------------------------------
 !
 !  register this subroutine
@@ -914,8 +914,12 @@
           do nn = 1, nsteps_per_interval
              cosz_day = tday00_interval_beg + interval_cum_dayfrac(nn-1) &
                 - interval_cum_dayfrac(nsteps_per_interval)
+            
+            ! copied from forcing.f90
+            ! changed QSW_COSZ_WGHT to COSZEN
+             call compute_cosz(cosz_day, iblock, COSZEN(:,:,iblock))
 
-             call compute_cosz(cosz_day, iblock, QSW_COSZ_WGHT(:,:,iblock))
+             QSW_COSZ_WGHT(:,:,iblock) = COSZEN(:,:,iblock)
 
              if (interval_avg_ts(nn)) then
                 QSW_COSZ_WGHT_NORM(:,:,iblock) = &
@@ -1448,17 +1452,6 @@
       return
    endif
 
-   call POP_HaloUpdate(CLOUDFRAC_MODIS,POP_haloClinic,          &
-                       POP_gridHorzLocCenter,          &
-                       POP_fieldKindScalar, errorCode, &
-                       fillValue = 0.0_POP_r8)
-
-   if (errorCode /= POP_Success) then
-      call POP_ErrorSet(errorCode, &
-         'ocn_import_mct: error updating DIAG CLOUDFRAC_MODIS halo')
-      return
-   endif
-
    call POP_HaloUpdate(CLOUDFRAC_ISCCP,POP_haloClinic,          &
                        POP_gridHorzLocCenter,          &
                        POP_fieldKindScalar, errorCode, &
@@ -1467,17 +1460,6 @@
    if (errorCode /= POP_Success) then
       call POP_ErrorSet(errorCode, &
          'ocn_import_mct: error updating DIAG CLOUDFRAC_ISCCP halo')
-      return
-   endif
-
-   call POP_HaloUpdate(COSZEN,POP_haloClinic,          &
-                       POP_gridHorzLocCenter,          &
-                       POP_fieldKindScalar, errorCode, &
-                       fillValue = 0.0_POP_r8)
-
-   if (errorCode /= POP_Success) then
-      call POP_ErrorSet(errorCode, &
-         'ocn_import_mct: error updating DIAG COSZEN halo')
       return
    endif
 
@@ -1610,8 +1592,8 @@
       eccf            ! Earth-sun distance factor (ie. (1/r)**2)
 
 !-----------------------------------------------------------------------
-
-   call timer_start(timer_compute_cosz, block_id=iblock)
+  ! try commenting out timer
+  !  call timer_start(timer_compute_cosz, block_id=iblock)
 
 !  shr_orb code assumes Jan 1 = calday 1, unlike Jan 1 = tday 0
    calday = tday + c1
@@ -1627,7 +1609,7 @@
       enddo
    enddo
 
-   call timer_stop(timer_compute_cosz, block_id=iblock)
+   ! call timer_stop(timer_compute_cosz, block_id=iblock)
 
 !-----------------------------------------------------------------------
 !EOC
